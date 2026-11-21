@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('..', import.meta.url));
 const META_PATH = join(root, '.deploy-meta.json');
 const REPO = 'leetduel';
-const OWNER = 'S-HEMANTH-REDDY';
+const OWNER = 'Hemanth-UF-CS';
 const DB_URL = 'https://leetduel-19229-aac55-default-rtdb.firebaseio.com';
 
 function loadMeta() {
