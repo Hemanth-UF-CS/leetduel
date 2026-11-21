@@ -1,32 +1,48 @@
-# React + TypeScript + Vite
+# LeetDuel
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A daily coding competition for two people. Each player logs the LeetCode problems they solved
+that day, with the problem number and title as proof, before midnight. The goal is five
+problems a day. Whoever misses more days pays for the next outing.
 
-Currently, two official plugins are available:
+Live: https://hemanth-uf-cs.github.io/leetduel/
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## What it does
 
-## React Compiler
+- **Logging:** each log holds the problems solved that day. Points are 1 for easy, 2 for
+  medium and 3 for hard.
+- **Leaderboard:** today's score, total score, current and longest streaks, and missed days.
+- **Pay tab:** works out who owes an outing from the difference in missed days, minus the
+  outings already paid.
+- **Stats:** 30-day series, a 17-week heatmap, weekly and monthly summaries, achievements and
+  CSV export.
+- **Reminders:** a countdown to the midnight deadline.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## How sync works
 
-## Expanding the Oxlint configuration
+Two people edit the same state from different devices, often offline, so writes are merged
+rather than overwritten (`mergeStates` in `src/lib/storage.ts`):
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+- Logs are keyed by `user|date`, and the most recently updated copy wins.
+- Deleting a day writes a tombstone. A log is dropped if its tombstone is newer than its last
+  edit.
+- A reset stores a timestamp. Anything older than it is discarded on every merge.
+- Payment history is a union keyed by id, and payment counts take the maximum.
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+State is stored in a Firebase Realtime Database. It is also saved to `localStorage`, so the app
+keeps working with no backend, or when a request fails.
+
+## Run
+
+```bash
+npm install
+npm run dev                     # local-only mode, data stays in this browser
+VITE_DB_URL=<firebase-rtdb-url> npm run dev   # shared mode
+npm run build
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Pushes to `main` deploy to GitHub Pages (`.github/workflows/deploy-pages.yml`). The database
+URL comes from the `VITE_DB_URL` repository secret.
+
+## Stack
+
+React 19, TypeScript, Vite, Recharts, date-fns, Firebase Realtime Database and GitHub Pages.
